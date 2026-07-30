@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>EchoFlow Promo</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050713}
+    canvas{display:block;width:100vw;height:100vh}
+  </style>
+</head>
+<body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script>
+const W=1920,H=1080,DURATION=12,FPS=30
+const canvas=document.querySelector('#stage'),ctx=canvas.getContext('2d',{alpha:false})
+const ui=new Image()
+ui.src='../imagegen/echoflow-dashboard-16x9.png'
+
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v))
+const ease=t=>1-Math.pow(1-clamp(t),3)
+const smooth=t=>{t=clamp(t);return t*t*(3-2*t)}
+const lerp=(a,b,t)=>a+(b-a)*t
+const rgba=(hex,a)=>{
+  const n=parseInt(hex.slice(1),16)
+  return `rgba(${n>>16},${n>>8&255},${n&255},${a})`
+}
+function rr(x,y,w,h,r){
+  const q=Math.min(r,w/2,h/2);ctx.beginPath();ctx.roundRect(x,y,w,h,q)
+}
+function text(str,x,y,size,weight='600',color='#fff',align='left'){
+  ctx.save();ctx.font=`${weight} ${size}px "Microsoft YaHei","PingFang SC",sans-serif`
+  ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(str,x,y);ctx.restore()
+}
+function pill(label,x,y,color='#8b5cf6',dot=true){
+  ctx.save();ctx.font='600 22px "Microsoft YaHei",sans-serif'
+  const tw=ctx.measureText(label).width,w=tw+(dot?68:46)
+  rr(x,y,w,48,24);ctx.fillStyle=rgba(color,.16);ctx.fill();ctx.strokeStyle=rgba(color,.42);ctx.lineWidth=1.5;ctx.stroke()
+  if(dot){ctx.beginPath();ctx.arc(x+24,y+24,6,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.shadowColor=color;ctx.shadowBlur=16;ctx.fill()}
+  text(label,x+(dot?43:23),y+25,20,'600','#f4f0ff');ctx.restore();return w
+}
+function background(t){
+  const g=ctx.createRadialGradient(1450,210,10,1450,210,1250)
+  g.addColorStop(0,'#17143d');g.addColorStop(.48,'#090b20');g.addColorStop(1,'#040611')
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H)
+  ctx.save();ctx.globalAlpha=.18
+  for(let x=-200;x<W+200;x+=80){
+    ctx.strokeStyle='rgba(139,92,246,.14)';ctx.lineWidth=1;ctx.beginPath()
+    ctx.moveTo(x+(t*14)%80,0);ctx.lineTo(x-300+(t*14)%80,H);ctx.stroke()
+  }
+  for(let y=80;y<H;y+=80){
+    ctx.strokeStyle='rgba(40,215,221,.07)';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()
+  }
+  for(let i=0;i<34;i++){
+    const x=(i*271+Math.sin(t*.7+i)*26)%W,y=(i*167+Math.cos(t*.6+i)*18)%H
+    ctx.beginPath();ctx.arc(x,y,1.6+(i%3),0,Math.PI*2);ctx.fillStyle=i%4?'#8b5cf6':'#28d7dd';ctx.globalAlpha=.15+(i%5)*.04;ctx.fill()
+  }
+  ctx.restore()
+}
+function drawLogo(x,y,scale=1,alpha=1){
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.scale(scale,scale)
+  const g=ctx.createLinearGradient(0,0,64,64);g.addColorStop(0,'#a78bfa');g.addColorStop(1,'#6544df')
+  rr(0,0,66,66,20);ctx.fillStyle=g;ctx.fill();ctx.shadowColor='#8b5cf6';ctx.shadowBlur=34;ctx.fill()
+  ctx.strokeStyle='#fff';ctx.lineWidth=4;ctx.lineCap='round';ctx.lineJoin='round'
+  ctx.beginPath();ctx.moveTo(14,34);ctx.lineTo(23,34);ctx.lineTo(28,21);ctx.lineTo(36,47);ctx.lineTo(43,28);ctx.lineTo(49,34);ctx.lineTo(55,34);ctx.stroke()
+  text('EchoFlow',89,34,36,'700','#fff')
+  ctx.restore()
+}
+function drawUI(scale,cx,cy,alpha=1,darken=0){
+  const w=W*scale,h=H*scale,x=W/2+cx-w/2,y=H/2+cy-h/2
+  ctx.save();ctx.globalAlpha=alpha
+  ctx.shadowColor='rgba(0,0,0,.75)';ctx.shadowBlur=80;ctx.shadowOffsetY=30
+  rr(x,y,w,h,18);ctx.clip();ctx.drawImage(ui,x,y,w,h)
+  if(darken){ctx.fillStyle=`rgba(3,5,15,${darken})`;ctx.fillRect(x,y,w,h)}
+  ctx.restore()
+  return {x,y,w,h}
+}
+function callout(x,y,w,title,copy,color='#8b5cf6',progress=1){
+  const p=ease(progress);ctx.save();ctx.globalAlpha=p;ctx.translate(0,(1-p)*28)
+  rr(x,y,w,118,18);ctx.fillStyle='rgba(10,12,31,.91)';ctx.fill()
+  ctx.strokeStyle=rgba(color,.4);ctx.lineWidth=1.5;ctx.stroke()
+  rr(x+18,y+20,10,78,5);ctx.fillStyle=color;ctx.fill();ctx.shadowColor=color;ctx.shadowBlur=20;ctx.fill()
+  text(title,x+52,y+39,25,'700','#fff');text(copy,x+52,y+79,17,'400','#8f92aa')
+  ctx.restore()
+}
+function sceneIntro(t){
+  background(t)
+  const p=ease(t/1.25)
+  drawLogo(124,92,1,p)
+  ctx.save();ctx.globalAlpha=p;ctx.translate(0,(1-p)*60)
+  text('让每一条评论',W/2,420,82,'700','#fff','center')
+  const grad=ctx.createLinearGradient(560,0,1360,0);grad.addColorStop(0,'#a78bfa');grad.addColorStop(.55,'#ff7080');grad.addColorStop(1,'#42d8dc')
+  ctx.font='700 82px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=grad;ctx.fillText('都成为增长线索',W/2,522)
+  text('实时评论采集 · 自动去重 · 本地安全导出',W/2,640,24,'400','#8d90a8','center')
+  ctx.restore()
+  const line=smooth((t-.35)/1.1);ctx.fillStyle='rgba(139,92,246,.18)';ctx.fillRect(W/2-300,704,600,2);ctx.fillStyle='#8b5cf6';ctx.fillRect(W/2-300,704,600*line,2)
+}
+function sceneReveal(t){
+  background(t)
+  const p=ease((t-1.55)/.85),exit=smooth((t-4.55)/.45)
+  const scale=lerp(.88,1,p)-exit*.02
+  drawUI(scale,lerp(170,0,p),lerp(35,0,p),p)
+  ctx.fillStyle=`rgba(5,7,19,${1-p})`;ctx.fillRect(0,0,W,H)
+  ctx.save();ctx.globalAlpha=p*(1-exit)
+  drawLogo(92,58,.72,1)
+  pill('实时采集已连接',1415,74,'#32d583',true)
+  callout(96,814,600,'新评论，实时捕捉','持续监听评论区，新增内容自动入库','#ff5f6d',smooth((t-2.35)/.55))
+  ctx.restore()
+}
+function sceneComments(t){
+  background(t)
+  const p=smooth((t-4.75)/.65),exit=smooth((t-7.1)/.45)
+  const scale=lerp(1,1.32,p)
+  drawUI(scale,lerp(0,-105,p),lerp(0,35,p),1,exit*.32)
+  ctx.save();ctx.globalAlpha=p*(1-exit)
+  const x=1030,y=760
+  rr(x,y,750,172,22);ctx.fillStyle='rgba(8,10,27,.94)';ctx.fill();ctx.strokeStyle='rgba(139,92,246,.42)';ctx.lineWidth=1.5;ctx.stroke()
+  pill('自动去重',x+28,y+26,'#8b5cf6',true)
+  pill('意图标记',x+204,y+26,'#28d7dd',true)
+  pill('本地存储',x+380,y+26,'#32d583',true)
+  text('把瞬间互动，沉淀成可分析的数据资产',x+30,y+124,27,'600','#f5f2ff')
+  ctx.restore()
+}
+function sceneInsights(t){
+  background(t)
+  const p=smooth((t-7.2)/.65),exit=smooth((t-9.65)/.45)
+  drawUI(lerp(1.32,1.18,p),lerp(-105,-250,p),lerp(35,0,p),1,exit*.32)
+  ctx.save();ctx.globalAlpha=p*(1-exit)
+  callout(90,162,620,'洞察不止于“看见”','高频关键词与用户意图，一屏掌握','#28d7dd',p)
+  callout(90,304,620,'历史评论自动补采','错过的互动，也能一键补全','#8b5cf6',smooth((t-7.55)/.45))
+  callout(90,446,620,'一键导出 CSV','直接进入 Excel，复盘更高效','#32d583',smooth((t-7.9)/.45))
+  ctx.restore()
+}
+function sceneOutro(t){
+  background(t)
+  const p=smooth((t-9.8)/.6)
+  drawUI(1,0,0,p,.72*p)
+  const g=ctx.createLinearGradient(0,0,W,0);g.addColorStop(0,'rgba(5,7,19,.94)');g.addColorStop(.58,'rgba(5,7,19,.78)');g.addColorStop(1,'rgba(5,7,19,.5)')
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H)
+  ctx.save();ctx.globalAlpha=p;ctx.translate(0,(1-p)*35)
+  drawLogo(132,135,1,1)
+  text('看见评论',132,415,78,'700','#fff')
+  text('读懂真实需求',132,512,78,'700','#a98cff')
+  text('直播评论自动采集与洞察平台',137,612,27,'400','#999bb1')
+  pill('实时抓取',137,686,'#ff5f6d',true)
+  pill('自动补采',311,686,'#8b5cf6',true)
+  pill('CSV 导出',485,686,'#32d583',true)
+  rr(137,814,332,64,32);ctx.fillStyle='#8b5cf6';ctx.fill();ctx.shadowColor='#8b5cf6';ctx.shadowBlur=30;ctx.fill()
+  text('让每场直播都有迹可循',303,847,21,'600','#fff','center')
+  ctx.restore()
+}
+function draw(ms){
+  const t=ms/1000
+  ctx.clearRect(0,0,W,H)
+  if(t<1.8) sceneIntro(t)
+  else if(t<4.9) sceneReveal(t)
+  else if(t<7.45) sceneComments(t)
+  else if(t<10) sceneInsights(t)
+  else sceneOutro(t)
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(0,H-5,W,5)
+  const pg=ctx.createLinearGradient(0,0,W,0);pg.addColorStop(0,'#8b5cf6');pg.addColorStop(.56,'#ff5f6d');pg.addColorStop(1,'#28d7dd')
+  ctx.fillStyle=pg;ctx.fillRect(0,H-5,W*clamp(t/DURATION),5)
+}
+function loop(start){
+  const now=performance.now(),elapsed=now-start
+  draw(Math.min(elapsed,DURATION*1000))
+  if(elapsed<DURATION*1000) requestAnimationFrame(()=>loop(start))
+}
+window.startRecording=async()=>{
+  await ui.decode()
+  const types=['video/mp4;codecs=avc1.42E01E','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']
+  const mimeType=types.find(type=>MediaRecorder.isTypeSupported(type))
+  window.__mimeType=mimeType
+  const stream=canvas.captureStream(FPS),chunks=[]
+  const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:12000000})
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)}
+  const stopped=new Promise(resolve=>recorder.onstop=resolve)
+  draw(0);recorder.start(250);const start=performance.now();loop(start)
+  await new Promise(resolve=>setTimeout(resolve,DURATION*1000+250))
+  recorder.stop();await stopped
+  const blob=new Blob(chunks,{type:mimeType})
+  const ext=mimeType.includes('mp4')?'mp4':'webm'
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`echoflow-promo-16x9.${ext}`;a.click()
+  return {mimeType,size:blob.size,ext}
+}
+ui.onload=()=>draw(0)
+</script>
+</body>
+</html>

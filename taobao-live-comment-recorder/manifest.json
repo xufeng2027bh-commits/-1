@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "淘宝直播评论记录器",
+  "version": "1.3.0",
+  "description": "在淘宝直播中控台本地记录自己直播间页面上显示的新评论，并导出为 CSV。",
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://liveplatform.taobao.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://liveplatform.taobao.com/restful/index/live/control*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

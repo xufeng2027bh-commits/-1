@@ -1,6 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ArrowDown, ArrowUpRight, Mail, Phone, Play, MoveUpRight } from 'lucide-react'
+import DotField from './DotField'
+import BounceCards from './BounceCards'
+import ProjectVideo from './ProjectVideo'
+import ClickSpark from './ClickSpark'
+import AnimatedContent from './AnimatedContent'
+import BorderGlow from './BorderGlow'
 import './styles.css'
 import './reference.css'
 
@@ -21,16 +27,24 @@ const projects = [
     desc: '面向 B 端企业、科研学术机构、政务单位提供一体化视觉内容服务。主动对接各类客户深度沟通，精准挖掘宣讲、传播核心需求，区分不同受众与使用场景。',
     stat: '交付通过率 100%',
     tone: 'silver',
-    image: '/assets/project-visual-stage.webp',
+    gallery: [
+      '/assets/visual-nio.webp',
+      '/assets/visual-xcmg.webp',
+      '/assets/visual-energy.webp',
+      '/assets/visual-milk.webp',
+      '/assets/visual-service.webp',
+      '/assets/visual-liquor.webp',
+    ],
   },
   {
     no: '03',
     type: 'AUTOMATION / 2026',
     title: '直播复盘自动化',
-    desc: '搭建评论自动抓取与整理工具，让运营判断更快进入下一轮迭代。',
+    desc: '自研评论自动抓取与整理工具，利用AI让运营判断更快进入下一轮迭代。',
     stat: '效率提升 500%',
     tone: 'orange',
-    image: '/assets/project-review-automation-v2.webp',
+    video: '/assets/project-review-demo.mp4',
+    poster: '/assets/project-review-poster.webp',
   },
 ]
 
@@ -65,56 +79,76 @@ function MagneticLink({ href, children, className = '' }) {
 }
 
 function App() {
-  const canvasRef = useRef(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    let raf
-    let t = 0
-    const resize = () => {
-      canvas.width = window.innerWidth * devicePixelRatio
-      canvas.height = window.innerHeight * devicePixelRatio
-      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
-    }
-    const draw = () => {
-      const w = innerWidth, h = innerHeight
-      ctx.clearRect(0, 0, w, h)
-      const g = ctx.createRadialGradient(w * (.68 + Math.sin(t) * .05), h * .45, 0, w * .68, h * .45, Math.max(w, h) * .62)
-      g.addColorStop(0, 'rgba(130,255,221,.16)')
-      g.addColorStop(.34, 'rgba(27,89,78,.08)')
-      g.addColorStop(1, 'rgba(0,0,0,0)')
-      ctx.fillStyle = g
-      ctx.fillRect(0, 0, w, h)
-      ctx.strokeStyle = 'rgba(170,255,230,.1)'
-      ctx.lineWidth = 1
-      for (let i = 0; i < 12; i++) {
-        ctx.beginPath()
-        const y = h * (.22 + i * .045)
-        for (let x = 0; x <= w; x += 24) {
-          const yy = y + Math.sin(x * .007 + t * 2 + i * .45) * (14 + i * 1.8)
-          x ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy)
-        }
-        ctx.stroke()
-      }
-      t += .004
-      raf = requestAnimationFrame(draw)
-    }
-    resize(); draw()
-    window.addEventListener('resize', resize)
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize) }
-  }, [])
+  const handlePortraitMove = (event) => {
+    const element = event.currentTarget
+    const bounds = element.getBoundingClientRect()
+    const x = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width))
+    const y = Math.min(1, Math.max(0, (event.clientY - bounds.top) / bounds.height))
+
+    element.style.setProperty('--portrait-x', `${x * 100}%`)
+    element.style.setProperty('--portrait-y', `${y * 100}%`)
+    element.style.setProperty('--portrait-tilt-x', `${(0.5 - y) * 4}deg`)
+    element.style.setProperty('--portrait-tilt-y', `${(x - 0.5) * 4}deg`)
+  }
+
+  const resetPortrait = (event) => {
+    const element = event.currentTarget
+    element.style.setProperty('--portrait-x', '50%')
+    element.style.setProperty('--portrait-y', '42%')
+    element.style.setProperty('--portrait-tilt-x', '0deg')
+    element.style.setProperty('--portrait-tilt-y', '0deg')
+  }
+
+  const handleExperienceMove = (event) => {
+    const element = event.currentTarget
+    const bounds = element.getBoundingClientRect()
+    const x = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width))
+    const y = Math.min(1, Math.max(0, (event.clientY - bounds.top) / bounds.height))
+
+    element.style.setProperty('--card-x', `${x * 100}%`)
+    element.style.setProperty('--card-y', `${y * 100}%`)
+    element.style.setProperty('--card-tilt-x', `${(0.5 - y) * 3}deg`)
+    element.style.setProperty('--card-tilt-y', `${(x - 0.5) * 3}deg`)
+  }
+
+  const resetExperience = (event) => {
+    const element = event.currentTarget
+    element.style.setProperty('--card-x', '72%')
+    element.style.setProperty('--card-y', '24%')
+    element.style.setProperty('--card-tilt-x', '0deg')
+    element.style.setProperty('--card-tilt-y', '0deg')
+  }
 
   return (
     <main>
       <section className="hero" id="top">
-        <canvas ref={canvasRef} className="hero-video" aria-label="动态科技视觉背景" />
+        <DotField
+          className="hero-dot-field"
+          dotRadius={1.6}
+          dotSpacing={22}
+          cursorRadius={360}
+          bulgeStrength={48}
+          glowRadius={180}
+          sparkle
+          gradientFrom="rgba(255,255,255,.28)"
+          gradientTo="rgba(225,37,44,.42)"
+          glowColor="rgba(225,37,44,.16)"
+        />
         <div className="hero-red-disc" />
-        <img className="hero-person" src="/assets/xufeng-hero-cutout.png" alt="徐锋个人形象抠图" />
+        <img
+          className="hero-person"
+          src="/assets/xufeng-hero-cutout.webp"
+          alt="徐锋个人形象抠图"
+          width="1024"
+          height="1536"
+          fetchPriority="high"
+          decoding="async"
+        />
         <div className="noise" />
         <nav>
-          <a className="logo" href="#top"><img src="/assets/xf-logo-cutout.png" alt="XF 标志" /></a>
+          <a className="logo" href="#top"><img src="/assets/xf-logo-cutout.webp" alt="XF 标志" width="256" height="256" decoding="async" /></a>
           <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
             <a href="#about">关于</a><a href="#works">项目</a><a href="#skills">能力</a>
           </div>
@@ -122,12 +156,22 @@ function App() {
           <MagneticLink href="#contact">联系我</MagneticLink>
         </nav>
         <div className="hero-copy">
-          <p className="eyebrow"><span /> CREATIVE PORTFOLIO / 2026</p>
-          <h1>I DESIGN<br/><em>LIVE</em> GROWTH</h1>
-          <div className="hero-foot">
-            <p>视觉设计、运营与增长策略。<br/>让好内容被看见，也让每一次触达产生结果。</p>
-            <a href="#about" className="scroll"><ArrowDown size={18}/> SCROLL TO EXPLORE</a>
-          </div>
+          <AnimatedContent
+            className="hero-copy-content"
+            distance={46}
+            duration={1.45}
+            delay={0.18}
+            threshold={0.02}
+            scale={0.985}
+            ease="power2.out"
+          >
+            <p className="eyebrow"><span /> CREATIVE PORTFOLIO / 2026</p>
+            <h1>I DESIGN<br/><em>LIVE</em> GROWTH</h1>
+            <div className="hero-foot">
+              <p>视觉设计、运营与增长策略。<br/>让好内容被看见，也让每一次触达产生结果。</p>
+              <a href="#about" className="scroll"><ArrowDown size={18}/> SCROLL TO EXPLORE</a>
+            </div>
+          </AnimatedContent>
         </div>
         <div className="hero-stamp"><b>200%</b><span>GROWTH<br/>THROUGH DESIGN</span></div>
         <div className="hero-cross hero-cross-a">+</div>
@@ -142,11 +186,50 @@ function App() {
       <section className="about wrap" id="about">
         <div className="section-tag">01 / PROFILE</div>
         <div className="about-grid">
-          <div className="portrait">
-            <div className="portrait-art"><img src="/assets/xufeng-chess-cutout.png" alt="徐锋手拿棋子的个人形象抠图" /><img className="portrait-logo" src="/assets/xf-logo-cutout.png" alt="XF 标志" /><div className="scan" /></div>
+          <AnimatedContent
+            className="portrait"
+            direction="horizontal"
+            reverse
+            distance={42}
+            duration={1.2}
+            threshold={0.16}
+            scale={0.985}
+            ease="power2.out"
+          >
+            <div
+              className="portrait-art"
+              onPointerMove={handlePortraitMove}
+              onPointerLeave={resetPortrait}
+            >
+              <div className="portrait-tech-grid" aria-hidden="true" />
+              <div className="portrait-person-layer">
+                <img
+                  className="portrait-person-image"
+                  src="/assets/xufeng-chess-cutout.webp"
+                  alt="徐锋手拿棋子的个人形象抠图"
+                  width="800"
+                  height="1200"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div className="portrait-spotlight" aria-hidden="true" />
+              <div className="portrait-reticle" aria-hidden="true" />
+              <img className="portrait-logo" src="/assets/xf-logo-cutout.webp" alt="XF 标志" width="256" height="256" loading="lazy" decoding="async" />
+              <div className="scan" />
+            </div>
             <div className="portrait-label">BASED IN CHINA<br/>AVAILABLE FOR OPPORTUNITIES</div>
-          </div>
-          <div className="bio">
+          </AnimatedContent>
+          <AnimatedContent
+            className="bio"
+            direction="horizontal"
+            distance={42}
+            duration={1.25}
+            delay={0.12}
+            threshold={0.16}
+            scale={0.99}
+            ease="power2.out"
+          >
             <p className="eyebrow">ABOUT ME</p>
             <div className="bio-kicker">DESIGN<br/>WITH<br/>TEETH.</div>
             <h2>怀千里马之志，<br/>做深耕者之事，<br/>凭实干破局。</h2>
@@ -160,50 +243,141 @@ function App() {
               <div><strong>200<span>%</span></strong><small>核心大促业绩增长</small></div>
               <div><strong>500<span>%</span></strong><small>直播复盘效率提升</small></div>
             </div>
-          </div>
+          </AnimatedContent>
         </div>
       </section>
 
       <section className="experience wrap" id="experience">
-        <header className="section-head">
+        <AnimatedContent
+          as="header"
+          className="section-head"
+          distance={34}
+          duration={1.1}
+          threshold={0.15}
+          scale={0.99}
+          ease="power2.out"
+        >
           <div><div className="section-tag">02 / OPERATION EXPERIENCE</div><h2>不只做内容，<br/>更经营结果。</h2></div>
           <p>从货品、内容到渠道与用户，<br/>建立可以持续迭代的运营闭环。</p>
-        </header>
-        <div className="experience-grid">
+        </AnimatedContent>
+        <AnimatedContent
+          className="experience-grid"
+          childSelector=":scope > article"
+          distance={46}
+          duration={1.05}
+          stagger={0.16}
+          threshold={0.12}
+          scale={0.985}
+          ease="power2.out"
+        >
           {operationExperience.map((item, index) => (
-            <article className="experience-card" key={item.code}>
-              <div className="experience-top">
-                <span>{item.code}</span><b>0{index + 1}</b>
-              </div>
-              <h3>{item.title}</h3>
-              <small>{item.role}</small>
-              <p>{item.summary}</p>
-              <ul>{item.items.map(detail => <li key={detail}>{detail}</li>)}</ul>
-              <div className="experience-metrics">
-                {item.metrics.map(metric => <span key={metric}>{metric}</span>)}
-              </div>
+            <article
+              className="experience-card"
+              key={item.code}
+              onPointerMove={handleExperienceMove}
+              onPointerLeave={resetExperience}
+            >
+              <BorderGlow
+                className="experience-border-glow"
+                edgeSensitivity={18}
+                glowColor="357 76 51"
+                backgroundColor="#101010"
+                borderRadius={0}
+                glowRadius={32}
+                glowIntensity={0.78}
+                coneSpread={18}
+                animated
+                colors={['#e1252c', '#ff6b70', '#f2f1ed']}
+                fillOpacity={0.14}
+              >
+                <div className="experience-glow" aria-hidden="true" />
+                <div className="experience-top">
+                  <span>{item.code}</span><b>0{index + 1}</b>
+                </div>
+                <h3>{item.title}</h3>
+                <small>{item.role}</small>
+                <p>{item.summary}</p>
+                <ul>{item.items.map(detail => <li key={detail}>{detail}</li>)}</ul>
+                <div className="experience-metrics">
+                  {item.metrics.map(metric => <span key={metric}>{metric}</span>)}
+                </div>
+              </BorderGlow>
             </article>
           ))}
-        </div>
+        </AnimatedContent>
       </section>
 
       <section className="works wrap" id="works">
-        <header className="section-head">
+        <AnimatedContent
+          as="header"
+          className="section-head"
+          distance={34}
+          duration={1.1}
+          threshold={0.15}
+          scale={0.99}
+          ease="power2.out"
+        >
           <div><div className="section-tag">03 / SELECTED WORK</div><h2>精选项目</h2></div>
           <p>跨越直播、电商与视觉设计，<br/>寻找创意与商业结果的交点。</p>
-        </header>
+        </AnimatedContent>
         <div className="project-list">
-          {projects.map((p) => (
+          {projects.map((p, index) => (
             <article className={`project ${p.tone}`} key={p.no}>
-              <div className="project-visual">
-                {p.image ? <img className="project-image" src={p.image} alt={`${p.title}项目展示`} /> : <div className="orb" />}
+              <AnimatedContent
+                className={`project-visual ${p.gallery ? 'project-visual-gallery' : ''} ${p.video ? 'project-visual-video' : ''}`}
+                direction="horizontal"
+                reverse={index % 2 === 0}
+                distance={34}
+                duration={1.15}
+                threshold={0.18}
+                scale={0.99}
+                ease="power2.out"
+              >
+                {p.gallery ? (
+                  <BounceCards
+                    className="project-bounce"
+                    images={p.gallery}
+                    containerWidth={820}
+                    containerHeight={520}
+                    animationDelay={0.3}
+                    animationStagger={0.14}
+                    easeType="elastic.out(1, 0.55)"
+                    transformStyles={[
+                      'rotate(-8deg) translate(-170px)',
+                      'rotate(6deg) translate(-105px)',
+                      'rotate(-4deg) translate(-35px)',
+                      'rotate(3deg) translate(35px)',
+                      'rotate(-5deg) translate(105px)',
+                      'rotate(8deg) translate(170px)',
+                    ]}
+                    enableHover
+                  />
+                ) : p.video ? (
+                  <ProjectVideo
+                    src={p.video}
+                    poster={p.poster}
+                    title={p.title}
+                  />
+                ) : p.image ? (
+                  <img className="project-image" src={p.image} alt={`${p.title}项目展示`} loading="lazy" decoding="async" />
+                ) : (
+                  <div className="orb" />
+                )}
                 <div className="grid-lines"/><span className="project-num">{p.no}</span>
-                <div className="play"><Play size={16} fill="currentColor"/></div>
-              </div>
-              <div className="project-info">
+                {!p.gallery && !p.video && <div className="play"><Play size={16} fill="currentColor"/></div>}
+              </AnimatedContent>
+              <AnimatedContent
+                className="project-info"
+                distance={28}
+                duration={1.05}
+                threshold={0.2}
+                delay={0.14}
+                scale={0.995}
+                ease="power2.out"
+              >
                 <span>{p.type}</span><h3>{p.title}</h3><p>{p.desc}</p>
                 <div className="project-bottom"><strong>{p.stat}</strong><MoveUpRight/></div>
-              </div>
+              </AnimatedContent>
             </article>
           ))}
         </div>
@@ -211,25 +385,57 @@ function App() {
       </section>
 
       <section className="skills wrap" id="skills">
-        <header className="section-head">
+        <AnimatedContent
+          as="header"
+          className="section-head"
+          distance={34}
+          duration={1.1}
+          threshold={0.15}
+          scale={0.99}
+          ease="power2.out"
+        >
           <div><div className="section-tag">04 / CAPABILITIES</div><h2>能力不是标签，<br/>是解决问题的方式。</h2></div>
-        </header>
-        <div className="skill-grid">
+        </AnimatedContent>
+        <AnimatedContent
+          className="skill-grid"
+          childSelector=":scope > article"
+          distance={42}
+          duration={1}
+          stagger={0.13}
+          threshold={0.12}
+          scale={0.985}
+          ease="power2.out"
+        >
           {strengths.map(([no,title,desc,tools]) => <article key={no}>
             <span>{no}</span><h3>{title}</h3><p>{desc}</p><small>{tools}</small>
           </article>)}
-        </div>
+        </AnimatedContent>
       </section>
 
       <section className="philosophy wrap">
         <div className="section-tag">05 / MY PHILOSOPHY</div>
         <div className="philosophy-grid">
-          <div className="philosophy-title">GOOD DESIGN<br/>IS CLEAR THINKING<br/>MADE <em>VISIBLE.</em></div>
-          <div className="philosophy-copy">
+          <AnimatedContent
+            className="philosophy-title"
+            distance={32}
+            duration={1.15}
+            threshold={0.18}
+            ease="power2.out"
+          >
+            GOOD DESIGN<br/>IS CLEAR THINKING<br/>MADE <em>VISIBLE.</em>
+          </AnimatedContent>
+          <AnimatedContent
+            className="philosophy-copy"
+            distance={28}
+            duration={1.1}
+            threshold={0.18}
+            delay={0.18}
+            ease="power2.out"
+          >
             <span>STRATEGY / STORYTELLING / IMPACT</span>
             <p>我相信设计不只是审美，而是沟通、连接和改变的工具。好的运营也不只是执行，而是让内容、用户和商业目标形成一条清晰的路径。</p>
             <b>以清晰对抗复杂，<br/>以行动回应目标。</b>
-          </div>
+          </AnimatedContent>
         </div>
       </section>
 
@@ -237,8 +443,33 @@ function App() {
         <div className="footer-inner">
           <div className="footer-orbit">AVAILABLE<br/>FOR<br/>2026</div>
           <p className="eyebrow"><span/> START A CONVERSATION</p>
-          <h2>设计驱动运营<br/><em>内容实现增长</em></h2>
-          <a className="big-mail" href="mailto:xufeng2027bh@163.com">LET'S TALK <ArrowUpRight/></a>
+          <AnimatedContent
+            as="h2"
+            distance={44}
+            duration={1.25}
+            threshold={0.12}
+            scale={0.985}
+            ease="power2.out"
+          >
+            设计驱动运营<br/><em>内容实现增长</em>
+          </AnimatedContent>
+          <AnimatedContent
+            distance={24}
+            duration={1.05}
+            delay={0.2}
+            threshold={0.1}
+            ease="power2.out"
+          >
+            <ClickSpark
+              sparkColor="#fff"
+              sparkSize={8}
+              sparkRadius={18}
+              sparkCount={7}
+              duration={520}
+            >
+              <a className="big-mail" href="mailto:xufeng2027bh@163.com">LET'S TALK <ArrowUpRight/></a>
+            </ClickSpark>
+          </AnimatedContent>
           <div className="footer-bottom"><span>© 2026 XUFENG</span><span>VISUAL DESIGN × LIVE OPERATIONS</span><a href="#top">BACK TO TOP ↑</a></div>
         </div>
       </footer>
