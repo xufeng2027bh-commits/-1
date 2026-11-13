@@ -7,6 +7,7 @@ export default function ProjectVideo({ src, poster, title }) {
   const activatedRef = useRef(false)
   const isInViewRef = useRef(false)
   const [isActivated, setIsActivated] = useState(false)
+  const [hasFrame, setHasFrame] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
 
   useEffect(() => {
@@ -17,6 +18,7 @@ export default function ProjectVideo({ src, poster, title }) {
     video.defaultMuted = true
     video.muted = true
     video.volume = 0
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -24,6 +26,10 @@ export default function ProjectVideo({ src, poster, title }) {
 
         if (!entry.isIntersecting) {
           video.pause()
+          return
+        }
+
+        if (coarsePointer) {
           return
         }
 
@@ -79,7 +85,7 @@ export default function ProjectVideo({ src, poster, title }) {
 
   return (
     <div ref={shellRef} className="project-video-shell">
-      {!isActivated && (
+      {!hasFrame && (
         <img
           className="project-video-poster"
           src={poster}
@@ -99,7 +105,8 @@ export default function ProjectVideo({ src, poster, title }) {
         preload="none"
         disablePictureInPicture
         aria-hidden="true"
-        onPlay={() => setIsPlaying(true)}
+        onLoadedData={() => setHasFrame(true)}
+        onPlaying={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
       <button

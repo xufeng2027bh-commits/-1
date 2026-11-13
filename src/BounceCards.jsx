@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import './BounceCards.css'
 
@@ -20,6 +20,28 @@ export default function BounceCards({
   enableHover = true,
 }) {
   const containerRef = useRef(null)
+  const [compact, setCompact] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 560px)').matches,
+  )
+  const resolvedTransforms = useMemo(() => (
+    compact
+      ? [
+          'rotate(-7deg) translate(-72px)',
+          'rotate(5deg) translate(-43px)',
+          'rotate(-3deg) translate(-14px)',
+          'rotate(3deg) translate(14px)',
+          'rotate(-4deg) translate(43px)',
+          'rotate(7deg) translate(72px)',
+        ]
+      : transformStyles
+  ), [compact, transformStyles])
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 560px)')
+    const syncCompact = () => setCompact(query.matches)
+    query.addEventListener?.('change', syncCompact)
+    return () => query.removeEventListener?.('change', syncCompact)
+  }, [])
 
   useEffect(() => {
     const container = containerRef.current
@@ -100,7 +122,7 @@ export default function BounceCards({
 
     images.forEach((_, index) => {
       const target = q(`.bounce-card-${index}`)
-      const baseTransform = transformStyles[index] || 'none'
+      const baseTransform = resolvedTransforms[index] || 'none'
       gsap.killTweensOf(target)
 
       if (index === hoveredIdx) {
@@ -141,7 +163,7 @@ export default function BounceCards({
       const target = q(`.bounce-card-${index}`)
       gsap.killTweensOf(target)
       gsap.to(target, {
-        transform: transformStyles[index] || 'none',
+        transform: resolvedTransforms[index] || 'none',
         scale: 1,
         zIndex: index + 1,
         duration: 0.65,
@@ -163,7 +185,7 @@ export default function BounceCards({
           key={src}
           className={`bounce-card bounce-card-${index}`}
           style={{
-            transform: transformStyles[index] ?? 'none',
+            transform: resolvedTransforms[index] ?? 'none',
             zIndex: index + 1,
           }}
           onMouseEnter={() => pushSiblings(index)}

@@ -46,13 +46,17 @@ export default function AnimatedContent({
       return undefined
     }
 
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches
+    const effectiveDistance = coarsePointer ? Math.min(distance, 24) : distance
+    const effectiveDuration = coarsePointer ? Math.min(duration, 0.9) : duration
+    const effectiveStagger = coarsePointer ? Math.min(stagger, 0.08) : stagger
     let scrollerTarget = container || document.getElementById('snap-main-container') || null
     if (typeof scrollerTarget === 'string') {
       scrollerTarget = document.querySelector(scrollerTarget)
     }
 
     const axis = direction === 'horizontal' ? 'x' : 'y'
-    const offset = reverse ? -distance : distance
+    const offset = reverse ? -effectiveDistance : effectiveDistance
     const startPct = (1 - threshold) * 100
     let scrollTrigger
     let timeline
@@ -83,10 +87,10 @@ export default function AnimatedContent({
 
           if (disappearAfter > 0) {
             disappearanceTween = gsap.to(targets, {
-              [axis]: reverse ? distance : -distance,
+              [axis]: reverse ? effectiveDistance : -effectiveDistance,
               scale: 0.8,
               opacity: animateOpacity ? initialOpacity : 0,
-              stagger,
+              stagger: effectiveStagger,
               delay: disappearAfter,
               duration: disappearDuration,
               ease: disappearEase,
@@ -100,8 +104,8 @@ export default function AnimatedContent({
         [axis]: 0,
         scale: 1,
         opacity: 1,
-        stagger,
-        duration,
+        stagger: effectiveStagger,
+        duration: effectiveDuration,
         ease,
       })
 

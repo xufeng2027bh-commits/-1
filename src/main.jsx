@@ -7,21 +7,28 @@ import ProjectVideo from './ProjectVideo'
 import ClickSpark from './ClickSpark'
 import AnimatedContent from './AnimatedContent'
 import BorderGlow from './BorderGlow'
+import CampusCampaign from './CampusCampaign'
+import ProfileStats from './ProfileStats'
+import { careerEntries, educationEntries } from './career'
+import './base.css'
 import './styles.css'
 import './reference.css'
+import './career.css'
 
 const projects = [
   {
     no: '01',
+    id: 'live-commerce',
     type: 'LIVE COMMERCE / 2026',
     title: '直播大促增长',
-    desc: '从蓄水、内容到转化与复盘，全权操盘 618 与暑期两大核心节点。',
+    desc: '统筹 618 与暑期两场大促，从预热引流到直播复盘，结合用户分层触达与限时优惠推动转化。转化率由约 1.5% 提升至约 3.1%。',
     stat: '累计 GMV 破亿',
     tone: 'cyan',
     image: '/assets/project-live-dashboard-v2.webp',
   },
   {
     no: '02',
+    id: 'visual-system',
     type: 'VISUAL SYSTEM / 2023—2025',
     title: '政企视觉内容定制',
     desc: '面向 B 端企业、科研学术机构、政务单位提供一体化视觉内容服务。主动对接各类客户深度沟通，精准挖掘宣讲、传播核心需求，区分不同受众与使用场景。',
@@ -38,10 +45,11 @@ const projects = [
   },
   {
     no: '03',
+    id: 'live-review',
     type: 'AUTOMATION / 2026',
     title: '直播复盘自动化',
-    desc: '自研评论自动抓取与整理工具，利用AI让运营判断更快进入下一轮迭代。',
-    stat: '效率提升 500%',
+    desc: '自研直播评论自动抓取与整理工具，将评论整理从手动记录改为自动化，并利用 AI 辅助复盘。',
+    stat: '整理耗时：180 → 30 分钟',
     tone: 'orange',
     video: '/assets/project-review-demo.mp4',
     poster: '/assets/project-review-poster.webp',
@@ -49,10 +57,10 @@ const projects = [
 ]
 
 const strengths = [
-  ['01', '视觉叙事', '用结构、节奏与数据视觉化，把复杂信息变成能够被理解和记住的内容。', 'PS / PPT / Blender'],
-  ['02', '直播增长', '覆盖选题脚本、排期、中控、互动、私域蓄水与付费转化的全链路操盘。', 'OBS / APP直播 / 私域'],
-  ['03', '数据复盘', '围绕观看、评论与付费数据建立标准化复盘，持续迭代话术和促单链路。', 'DATA / INSIGHT'],
-  ['04', '项目统筹', '独立对接政企、高校与媒体客户，推动跨团队项目从需求走向稳定交付。', 'PLAN / CONTROL'],
+  ['01', '视觉设计', '设计大促会场的页面层级与交互，也为发布会和学术汇报制作视觉内容及数据图表。', 'UI/UX / PS / PPT / Blender / 视频剪辑'],
+  ['02', '用户与产品运营', '梳理用户需求、策划 AI 功能和运营活动，关注新增用户、功能使用和停留时长。', '用户分层 / AI 功能策划 / 活动运营'],
+  ['03', '直播与数据复盘', '从脚本排期、现场中控到转化复盘，结合观看、评论与付费数据调整话术和促单环节。', 'OBS / Excel / SQL'],
+  ['04', '客户沟通与交付', '独立对接政企、高校及媒体客户，梳理需求、沟通方案，并协调项目进度与验收。', '需求沟通 / 客户维护 / 跨部门协作'],
 ]
 
 const operationExperience = [
@@ -60,17 +68,17 @@ const operationExperience = [
     code: 'E-COMMERCE',
     title: '店铺运营',
     role: '个人淘宝店铺 / 项目负责人',
-    summary: '独立完成从商品进入店铺到成交复购的完整运营闭环，把视觉表达、平台流量与用户转化放在同一套策略中。',
+    summary: '独立运营个人淘宝店铺，从选品、视觉设计到客服转化和售后复购。分析平台流量与竞品，优化自然搜索，并用优惠券和会员社群维护老客。',
     items: ['选品测款与竞品拆解', '主图 / 详情页视觉设计', '标题 SEO 与基础直通车', '优惠券、会员社群与复购维护'],
-    metrics: ['全链路', '自主运营'],
+    metrics: ['流水达百万', '全链路自主运营'],
   },
   {
     code: 'NEW MEDIA',
     title: '新媒体运营',
-    role: '内容策划 / 直播与活动运营',
-    summary: '围绕内容触达、直播互动和活动传播设计用户路径，并通过观看、评论和转化数据持续优化内容表现。',
-    items: ['内容选题、脚本与排期', '短视频剪辑与视觉包装', '社群 / APP 多渠道触达', '用户数据分析与内容复盘'],
-    metrics: ['内容 × 数据', '持续迭代'],
+    role: '校园美食公众号 / 项目负责人',
+    summary: '运营校园美食公众号，策划探店和测评内容，为餐饮商户引流，并根据阅读数据调整后续选题。',
+    items: ['探店测评与选题策划', '公众号推文制作', '餐饮商户内容引流', '阅读数据复盘'],
+    metrics: ['单篇阅读破万', '校园内容运营'],
   },
 ]
 
@@ -149,10 +157,10 @@ function App() {
         <div className="noise" />
         <nav>
           <a className="logo" href="#top"><img src="/assets/xf-logo-cutout.webp" alt="XF 标志" width="256" height="256" decoding="async" /></a>
-          <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
-            <a href="#about">关于</a><a href="#works">项目</a><a href="#skills">能力</a>
+          <div className={`nav-links ${menuOpen ? 'open' : ''}`} id="site-nav-links" onClick={() => setMenuOpen(false)}>
+            <a href="#about">关于</a><a href="#career">经历</a><a href="#works">项目</a><a href="#skills">能力</a>
           </div>
-          <button className="menu" onClick={() => setMenuOpen(!menuOpen)}>MENU</button>
+          <button className="menu" type="button" aria-controls="site-nav-links" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '关闭' : '菜单'}</button>
           <MagneticLink href="#contact">联系我</MagneticLink>
         </nav>
         <div className="hero-copy">
@@ -173,7 +181,7 @@ function App() {
             </div>
           </AnimatedContent>
         </div>
-        <div className="hero-stamp"><b>200%</b><span>GROWTH<br/>THROUGH DESIGN</span></div>
+        <div className="hero-stamp"><b>1 亿+</b><span>GMV</span></div>
         <div className="hero-cross hero-cross-a">+</div>
         <div className="hero-cross hero-cross-b">+</div>
         <div className="hero-index">PORTFOLIO / 2026</div>
@@ -233,17 +241,57 @@ function App() {
             <p className="eyebrow">ABOUT ME</p>
             <div className="bio-kicker">DESIGN<br/>WITH<br/>TEETH.</div>
             <h2>怀千里马之志，<br/>做深耕者之事，<br/>凭实干破局。</h2>
-            <p className="bio-copy">你好，我是徐锋，一名视觉设计师与直播运营。就读于渤海大学市场营销专业，拥有教育直播大促、自主电商、AI 教育运营与商业视觉设计的复合经验。我擅长把审美、数据和转化逻辑放进同一套解决方案里。</p>
+            <p className="bio-copy">你好，我是徐锋，渤海大学市场营销专业本科生。主要做用户与产品运营，擅长结合视觉设计与数据复盘，优化大促会场和直播转化。</p>
             <div className="contact-inline">
               <a href="tel:15117418161"><Phone size={15}/> 151 1741 8161</a>
               <a href="mailto:xufeng2027bh@163.com"><Mail size={15}/> xufeng2027bh@163.com</a>
             </div>
-            <div className="stats">
-              <div><strong>1<span>亿+</span></strong><small>累计操盘 GMV</small></div>
-              <div><strong>200<span>%</span></strong><small>核心大促业绩增长</small></div>
-              <div><strong>500<span>%</span></strong><small>直播复盘效率提升</small></div>
-            </div>
+            <ProfileStats />
           </AnimatedContent>
+        </div>
+      </section>
+
+      <section className="career wrap" id="career" aria-labelledby="career-heading">
+        <AnimatedContent as="header" className="section-head" distance={28} duration={1.1} threshold={0.12}>
+          <div><div className="section-tag">02 / CAREER</div><h2 id="career-heading">重点经历</h2></div>
+        </AnimatedContent>
+        <ol className="career-list">
+          {careerEntries.map((entry) => (
+            <AnimatedContent as="li" className={`career-entry${entry.metric ? ' career-entry-featured' : ''}`} key={entry.company} distance={22} duration={0.95} threshold={0.1}>
+              <div className="career-entry-meta">
+                <span>{entry.period}</span>
+                <h3>{entry.company}</h3>
+                <p>{entry.role}</p>
+              </div>
+              <div className="career-entry-body">
+                {entry.metric ? (
+                  <>
+                    <div className="career-result">
+                      <strong>{entry.metric}</strong>
+                      <span>{entry.result}</span>
+                    </div>
+                    <p>{entry.summary}</p>
+                  </>
+                ) : <p>{entry.result}</p>}
+                {entry.caseLinks?.length > 0 && (
+                  <div className="career-case-links">
+                    {entry.caseLinks.map(({ id, label }) => (
+                      <a className="career-case-link" key={id} href={`#${id}`}>{label} <span aria-hidden="true">↘</span></a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </AnimatedContent>
+          ))}
+        </ol>
+        <div className="career-background">
+          {educationEntries.map((entry) => (
+            <AnimatedContent as="article" className="career-background-card" key={entry.label} distance={22} duration={0.95} threshold={0.1}>
+              <span>{entry.label}</span>
+              <h3>{entry.title}</h3>
+              <p className="career-background-subtitle">{entry.subtitle}</p>
+            </AnimatedContent>
+          ))}
         </div>
       </section>
 
@@ -257,8 +305,8 @@ function App() {
           scale={0.99}
           ease="power2.out"
         >
-          <div><div className="section-tag">02 / OPERATION EXPERIENCE</div><h2>不只做内容，<br/>更经营结果。</h2></div>
-          <p>从货品、内容到渠道与用户，<br/>建立可以持续迭代的运营闭环。</p>
+          <div><div className="section-tag">03 / INDEPENDENT PROJECTS</div><h2>自主运营项目</h2></div>
+          <p>自主运营淘宝店铺和校园美食公众号的实践。</p>
         </AnimatedContent>
         <AnimatedContent
           className="experience-grid"
@@ -317,12 +365,13 @@ function App() {
           scale={0.99}
           ease="power2.out"
         >
-          <div><div className="section-tag">03 / SELECTED WORK</div><h2>精选项目</h2></div>
+          <div><div className="section-tag">04 / SELECTED WORK</div><h2>精选项目</h2></div>
           <p>跨越直播、电商与视觉设计，<br/>寻找创意与商业结果的交点。</p>
         </AnimatedContent>
+        <CampusCampaign />
         <div className="project-list">
           {projects.map((p, index) => (
-            <article className={`project ${p.tone}`} key={p.no}>
+            <article className={`project ${p.tone}`} id={p.id} key={p.id}>
               <AnimatedContent
                 className={`project-visual ${p.gallery ? 'project-visual-gallery' : ''} ${p.video ? 'project-visual-video' : ''}`}
                 direction="horizontal"
@@ -381,7 +430,17 @@ function App() {
             </article>
           ))}
         </div>
-        <p className="works-disclaimer">数据已脱敏处理，素材已隐去企业品牌标识，仅为个人展示，不构成任何商业价值及参考。</p>
+        <article className="sales-case" id="key-account-sales" aria-labelledby="sales-case-title">
+          <AnimatedContent as="header" distance={20} duration={1} threshold={0.1}>
+            <p className="sales-case-label">KEY ACCOUNT SALES / 2025—2026</p>
+            <h3 id="sales-case-title">AI 教育产品大客户销售</h3>
+          </AnimatedContent>
+          <AnimatedContent className="sales-case-body" distance={20} duration={1} threshold={0.1}>
+            <p>通过活动触达和线上沟通开发客户，梳理需求并协助调整方案，跟进商务沟通和签约。成交后持续收集使用反馈，跟进续费和增购机会。</p>
+            <p className="sales-case-result">累计成交 <strong>50 万+</strong></p>
+          </AnimatedContent>
+        </article>
+        <p className="works-disclaimer">项目数据已做脱敏处理，部分素材隐去了品牌标识。所有素材仅供个人作品展示，不作商业参考。</p>
       </section>
 
       <section className="skills wrap" id="skills">
@@ -394,7 +453,7 @@ function App() {
           scale={0.99}
           ease="power2.out"
         >
-          <div><div className="section-tag">04 / CAPABILITIES</div><h2>能力不是标签，<br/>是解决问题的方式。</h2></div>
+          <div><div className="section-tag">05 / CAPABILITIES</div><h2>能力不是标签，<br/>是解决问题的方式。</h2></div>
         </AnimatedContent>
         <AnimatedContent
           className="skill-grid"
@@ -410,10 +469,11 @@ function App() {
             <span>{no}</span><h3>{title}</h3><p>{desc}</p><small>{tools}</small>
           </article>)}
         </AnimatedContent>
+        <p className="skills-languages"><span>语言能力</span> 日语资料阅读与校对 · 基础商务英语沟通</p>
       </section>
 
       <section className="philosophy wrap">
-        <div className="section-tag">05 / MY PHILOSOPHY</div>
+        <div className="section-tag">06 / MY PHILOSOPHY</div>
         <div className="philosophy-grid">
           <AnimatedContent
             className="philosophy-title"

@@ -93,6 +93,9 @@ export default function BorderGlow({
   const rectRef = useRef(null)
   const pointerRef = useRef(null)
   const pointerFrameRef = useRef(null)
+  const coarsePointerRef = useRef(
+    typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+  )
 
   const updatePointerGlow = useCallback(() => {
     const card = cardRef.current
@@ -118,10 +121,12 @@ export default function BorderGlow({
   }, [])
 
   const handlePointerEnter = useCallback(() => {
+    if (coarsePointerRef.current) return
     rectRef.current = cardRef.current?.getBoundingClientRect() || null
   }, [])
 
   const handlePointerMove = useCallback((event) => {
+    if (coarsePointerRef.current) return
     pointerRef.current = { x: event.clientX, y: event.clientY }
     if (!rectRef.current) {
       rectRef.current = cardRef.current?.getBoundingClientRect() || null
@@ -137,7 +142,12 @@ export default function BorderGlow({
 
   useEffect(() => {
     const card = cardRef.current
-    if (!animated || !card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      !animated
+      || !card
+      || coarsePointerRef.current
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       return undefined
     }
 

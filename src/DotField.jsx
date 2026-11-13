@@ -30,7 +30,7 @@ const DotField = memo(({
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
     const dpr = coarsePointer ? 1 : Math.min(window.devicePixelRatio || 1, 1.5)
-    const frameInterval = 1000 / (coarsePointer ? 12 : 24)
+    const frameInterval = 1000 / (coarsePointer ? 8 : 24)
     let frame
     let resizeTimer
     let lastFrame = 0
@@ -147,7 +147,11 @@ const DotField = memo(({
     }
 
     const start = () => {
-      if (reducedMotion || isRunning || !isVisible || document.hidden) return
+      if (reducedMotion) {
+        canvas.dataset.animating = 'false'
+        return
+      }
+      if (isRunning || !isVisible || document.hidden) return
       isRunning = true
       canvas.dataset.animating = 'true'
       frame = requestAnimationFrame(draw)
