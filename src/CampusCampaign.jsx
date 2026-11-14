@@ -8,11 +8,14 @@ export default function CampusCampaign() {
       <AnimatedContent as="header" className="campus-case-heading" distance={20} duration={1} threshold={0.1}>
         <div>
           <p className="campus-case-label"><span aria-hidden="true" /> CAMPAIGN MATERIALS / 2026</p>
-          <h3 id="campus-campaign-title">天猫校园双 11 主会场物料</h3>
+          <h3 id="campus-campaign-title">天猫校园双 11 主会场</h3>
         </div>
         <div>
           <p className="campus-case-role"><strong>我的职责</strong> 负责「超级学生价」双端主会场搭建与 UI/UX 设计，统筹会场内容和上线，并负责运营资源的分配与管理。</p>
-          <p className="campus-case-result">转化率增长 <strong>10%</strong></p>
+          <div className="campus-case-results">
+            <p className="campus-case-result">单日 GMV <strong>超亿</strong></p>
+            <p className="campus-case-result">转化率增长 <strong>10%</strong></p>
+          </div>
         </div>
       </AnimatedContent>
 
