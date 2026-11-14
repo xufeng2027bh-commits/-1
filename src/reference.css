@@ -63,6 +63,14 @@ body {
   50% { transform: translateY(-50%) scale(1.025); }
 }
 .hero-copy { top: 50%; transform: translate(-50%,-40%); }
+.hero-copy-content { animation: heroCopyEnter .75s ease-out both; }
+@keyframes heroCopyEnter {
+  from { transform: translateY(14px); }
+  to { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy-content { animation: none; }
+}
 .hero h1 {
   font-family: Impact,"Arial Narrow","DM Sans",sans-serif;
   font-size: clamp(92px,9.5vw,182px);

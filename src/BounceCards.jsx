@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { gsap } from 'gsap'
 import './BounceCards.css'
 
 export default function BounceCards({
@@ -20,6 +19,7 @@ export default function BounceCards({
   enableHover = true,
 }) {
   const containerRef = useRef(null)
+  const gsapRef = useRef(null)
   const [compact, setCompact] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 560px)').matches,
   )
@@ -48,47 +48,46 @@ export default function BounceCards({
     if (!container) return undefined
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let hasAnimated = false
-    let observer
-    const ctx = gsap.context(() => {
-      const reveal = () => {
-        if (hasAnimated) return
-        hasAnimated = true
-        if (reducedMotion) {
-          gsap.set('.bounce-card', { opacity: 1 })
-          return
-        }
-        gsap.fromTo(
-          '.bounce-card',
-          { scale: 0.92, opacity: 0.82 },
-          {
-            scale: 1,
-            opacity: 1,
-            stagger: animationStagger,
-            ease: easeType,
-            delay: animationDelay,
-            duration: 1.15,
-            clearProps: 'opacity',
-          },
-        )
+    if (reducedMotion || !('IntersectionObserver' in window)) return undefined
+    let active = true
+    let ctx
+    const reveal = async () => {
+      try {
+        const { gsap } = await import('gsap')
+        if (!active) return
+        gsapRef.current = gsap
+        ctx = gsap.context(() => {
+          gsap.fromTo(
+            '.bounce-card',
+            { scale: 0.92, opacity: 0.82 },
+            {
+              scale: 1,
+              opacity: 1,
+              stagger: animationStagger,
+              ease: easeType,
+              delay: animationDelay,
+              duration: 1.15,
+              clearProps: 'opacity',
+            },
+          )
+        }, container)
+      } catch {
+        // The gallery stays visible if the optional animation bundle fails to load.
       }
-
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            reveal()
-            observer.disconnect()
-          }
-        },
-        { threshold: 0.18 },
-      )
-
-      observer.observe(container)
-    }, containerRef)
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      observer.disconnect()
+      void reveal()
+    }, { threshold: 0.12 })
+    observer.observe(container)
 
     return () => {
-      observer?.disconnect()
-      ctx.revert()
+      active = false
+      observer.disconnect()
+      gsapRef.current?.killTweensOf(container.querySelectorAll('.bounce-card'))
+      gsapRef.current = null
+      ctx?.revert()
     }
   }, [animationStagger, easeType, animationDelay])
 
@@ -112,8 +111,9 @@ export default function BounceCards({
   }
 
   const pushSiblings = (hoveredIdx) => {
+    const gsap = gsapRef.current
     if (
-      !enableHover
+      !gsap || !enableHover
       || !containerRef.current
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || window.matchMedia('(hover: none)').matches
@@ -151,8 +151,9 @@ export default function BounceCards({
   }
 
   const resetSiblings = () => {
+    const gsap = gsapRef.current
     if (
-      !enableHover
+      !gsap || !enableHover
       || !containerRef.current
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || window.matchMedia('(hover: none)').matches

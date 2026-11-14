@@ -1,158 +1,62 @@
-import React, { useLayoutEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import React, { useEffect, useRef } from 'react'
 
-gsap.registerPlugin(ScrollTrigger)
+const easeOut = {
+  'power2.out': 'cubic-bezier(.22,.61,.36,1)',
+  'power3.out': 'cubic-bezier(.16,1,.3,1)',
+}
 
 export default function AnimatedContent({
   as: Component = 'div',
   children,
-  container,
   distance = 100,
   direction = 'vertical',
   reverse = false,
   duration = 0.8,
   ease = 'power3.out',
-  initialOpacity = 0,
-  animateOpacity = true,
   scale = 1,
   threshold = 0.1,
   delay = 0,
   stagger = 0,
   childSelector = '',
-  disappearAfter = 0,
-  disappearDuration = 0.5,
-  disappearEase = 'power3.in',
-  onComplete,
-  onDisappearanceComplete,
-  className = '',
-  style,
   ...props
 }) {
   const ref = useRef(null)
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const element = ref.current
-    if (!element) return undefined
-
-    const targets = childSelector
-      ? [...element.querySelectorAll(childSelector)]
-      : [element]
-
-    if (!targets.length) return undefined
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(targets, { clearProps: 'transform,opacity', visibility: 'visible' })
-      return undefined
-    }
+    if (!element?.animate || !('IntersectionObserver' in window)
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
-    const effectiveDistance = coarsePointer ? Math.min(distance, 24) : distance
-    const effectiveDuration = coarsePointer ? Math.min(duration, 0.9) : duration
-    const effectiveStagger = coarsePointer ? Math.min(stagger, 0.08) : stagger
-    let scrollerTarget = container || document.getElementById('snap-main-container') || null
-    if (typeof scrollerTarget === 'string') {
-      scrollerTarget = document.querySelector(scrollerTarget)
-    }
-
-    const axis = direction === 'horizontal' ? 'x' : 'y'
-    const offset = reverse ? -effectiveDistance : effectiveDistance
-    const startPct = (1 - threshold) * 100
-    let scrollTrigger
-    let timeline
-    let disappearanceTween
-
-    const context = gsap.context(() => {
-      gsap.set(element, {
-        visibility: 'visible',
+    const offset = (reverse ? -1 : 1) * (coarsePointer ? Math.min(distance, 24) : distance)
+    const speed = coarsePointer ? Math.min(duration, 0.9) : duration
+    const spacing = coarsePointer ? Math.min(stagger, 0.08) : stagger
+    const animations = new Set()
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || entry.intersectionRatio < threshold) return
+      observer.disconnect()
+      const targets = childSelector ? element.querySelectorAll(childSelector) : [element]
+      targets.forEach((target, index) => {
+        const animation = target.animate([
+          { translate: direction === 'horizontal' ? `${offset}px 0` : `0 ${offset}px`, scale, opacity: 0.35 },
+          { translate: '0 0', scale: 1, opacity: 1 },
+        ], {
+          duration: speed * 1000,
+          delay: (delay + index * spacing) * 1000,
+          easing: easeOut[ease] ?? easeOut['power3.out'],
+          fill: 'backwards',
+        })
+        animations.add(animation)
+        animation.onfinish = () => animations.delete(animation)
       })
+    }, { threshold })
 
-      gsap.set(targets, {
-        [axis]: offset,
-        scale,
-        opacity: animateOpacity ? initialOpacity : 1,
-        visibility: 'visible',
-        willChange: 'transform, opacity',
-      })
-
-      timeline = gsap.timeline({
-        paused: true,
-        delay,
-        onComplete: () => {
-          gsap.set(targets, {
-            clearProps: 'transform,opacity,willChange',
-            visibility: 'visible',
-          })
-          onComplete?.()
-
-          if (disappearAfter > 0) {
-            disappearanceTween = gsap.to(targets, {
-              [axis]: reverse ? effectiveDistance : -effectiveDistance,
-              scale: 0.8,
-              opacity: animateOpacity ? initialOpacity : 0,
-              stagger: effectiveStagger,
-              delay: disappearAfter,
-              duration: disappearDuration,
-              ease: disappearEase,
-              onComplete: () => onDisappearanceComplete?.(),
-            })
-          }
-        },
-      })
-
-      timeline.to(targets, {
-        [axis]: 0,
-        scale: 1,
-        opacity: 1,
-        stagger: effectiveStagger,
-        duration: effectiveDuration,
-        ease,
-      })
-
-      scrollTrigger = ScrollTrigger.create({
-        trigger: element,
-        scroller: scrollerTarget,
-        start: `top ${startPct}%`,
-        once: true,
-        onEnter: () => timeline.play(),
-      })
-    }, element)
-
+    observer.observe(element)
     return () => {
-      scrollTrigger?.kill()
-      timeline?.kill()
-      disappearanceTween?.kill()
-      context.revert()
+      observer.disconnect()
+      animations.forEach(animation => animation.cancel())
     }
-  }, [
-    container,
-    distance,
-    direction,
-    reverse,
-    duration,
-    ease,
-    initialOpacity,
-    animateOpacity,
-    scale,
-    threshold,
-    delay,
-    stagger,
-    childSelector,
-    disappearAfter,
-    disappearDuration,
-    disappearEase,
-    onComplete,
-    onDisappearanceComplete,
-  ])
+  }, [childSelector, delay, direction, distance, duration, ease, reverse, scale, stagger, threshold])
 
-  return (
-    <Component
-      ref={ref}
-      className={className}
-      style={{ visibility: 'visible', ...style }}
-      {...props}
-    >
-      {children}
-    </Component>
-  )
+  return <Component ref={ref} {...props}>{children}</Component>
 }

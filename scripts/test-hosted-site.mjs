@@ -2,14 +2,21 @@ import assert from 'node:assert/strict'
 import { readdir, readFile } from 'node:fs/promises'
 
 const pages = process.env.CF_PAGES === '1'
-const { default: worker } = await import(pages ? '../dist/_worker.js' : '../dist/server/index.js')
 if (pages) {
   const dir = new URL('../dist/', import.meta.url)
-  assert.deepEqual((await readdir(dir)).sort(), ['_worker.js', 'index.html'])
-  assert.doesNotMatch(await readFile(new URL('./index.html', dir), 'utf8'), /\/assets\/|id="root"/)
-  const unavailable = await worker.fetch(new Request('https://example.com/'), {})
-  assert.equal(unavailable.status, 503)
+  assert.deepEqual((await readdir(dir)).sort(), ['_headers', '_redirects', 'assets', 'index.html'])
+  const html = await readFile(new URL('./index.html', dir), 'utf8')
+  assert.match(html, /id="root"/)
+  assert.doesNotMatch(html, /type="password"|PORTFOLIO_PASSWORD/)
+  const paths = [...html.matchAll(/(?:href|src)="(\/assets\/[^"]+)"/g)].map(([, path]) => path)
+  assert.ok(paths.some(path => path.endsWith('.js')) && paths.some(path => path.endsWith('.css')))
+  for (const path of [...paths, '/assets/project-review-demo.mp4']) {
+    assert.ok((await readFile(new URL(`.${path}`, dir))).byteLength > 0)
+  }
+  console.log('Static, password-free Pages output and portfolio assets passed.')
+  process.exit(0)
 }
+const { default: worker } = await import('../dist/server/index.js')
 
 const origin = process.env.PORTFOLIO_TEST_URL || 'https://example.com'
 const password = '230586490172'

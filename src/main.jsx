@@ -164,22 +164,14 @@ function App() {
           <MagneticLink href="#contact">联系我</MagneticLink>
         </nav>
         <div className="hero-copy">
-          <AnimatedContent
-            className="hero-copy-content"
-            distance={46}
-            duration={1.45}
-            delay={0.18}
-            threshold={0.02}
-            scale={0.985}
-            ease="power2.out"
-          >
+          <div className="hero-copy-content">
             <p className="eyebrow"><span /> CREATIVE PORTFOLIO / 2026</p>
             <h1>I DESIGN<br/><em>LIVE</em> GROWTH</h1>
             <div className="hero-foot">
               <p>视觉设计、运营与增长策略。<br/>让好内容被看见，也让每一次触达产生结果。</p>
               <a href="#about" className="scroll"><ArrowDown size={18}/> SCROLL TO EXPLORE</a>
             </div>
-          </AnimatedContent>
+          </div>
         </div>
         <div className="hero-stamp"><b>1 亿+</b><span>GMV</span></div>
         <div className="hero-cross hero-cross-a">+</div>

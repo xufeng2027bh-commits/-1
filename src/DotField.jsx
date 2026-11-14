@@ -27,16 +27,18 @@ const DotField = memo(({
     if (!canvas) return undefined
 
     const ctx = canvas.getContext('2d')
+    if (!ctx) return undefined
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
     const dpr = coarsePointer ? 1 : Math.min(window.devicePixelRatio || 1, 1.5)
     const frameInterval = 1000 / (coarsePointer ? 8 : 24)
     let frame
+    let frameTimer
     let resizeTimer
     let lastFrame = 0
     let tickCount = 0
     let engagement = 0
-    let isVisible = true
+    let isVisible = false
     let isRunning = false
 
     const rebuild = () => {
@@ -71,7 +73,10 @@ const DotField = memo(({
 
     const onResize = () => {
       clearTimeout(resizeTimer)
-      resizeTimer = setTimeout(rebuild, 100)
+      resizeTimer = setTimeout(() => {
+        rebuild()
+        if (isVisible) renderFrame()
+      }, 100)
     }
 
     const onMove = (event) => {
@@ -140,10 +145,14 @@ const DotField = memo(({
         return
       }
 
-      frame = requestAnimationFrame(draw)
-      if (now - lastFrame < frameInterval) return
+      const remaining = frameInterval - (now - lastFrame)
+      if (remaining > 0) {
+        frameTimer = setTimeout(() => { frame = requestAnimationFrame(draw) }, Math.max(0, remaining - 12))
+        return
+      }
       lastFrame = now
       renderFrame()
+      frameTimer = setTimeout(() => { frame = requestAnimationFrame(draw) }, frameInterval - 12)
     }
 
     const start = () => {
@@ -161,6 +170,7 @@ const DotField = memo(({
       isRunning = false
       canvas.dataset.animating = 'false'
       cancelAnimationFrame(frame)
+      clearTimeout(frameTimer)
     }
 
     const onVisibilityChange = () => {
@@ -169,21 +179,23 @@ const DotField = memo(({
     }
 
     const visibilityObserver = new IntersectionObserver(([entry]) => {
+      const wasVisible = isVisible
       isVisible = entry.isIntersecting
-      if (isVisible) start()
+      if (isVisible) {
+        if (!wasVisible) renderFrame()
+        start()
+      }
       else stop()
     }, { rootMargin: '120px 0px', threshold: 0 })
 
     const resizeObserver = new ResizeObserver(onResize)
     rebuild()
-    renderFrame()
     visibilityObserver.observe(canvas.parentElement)
     resizeObserver.observe(canvas.parentElement)
     document.addEventListener('visibilitychange', onVisibilityChange)
     if (!coarsePointer && !reducedMotion) {
       window.addEventListener('pointermove', onMove, { passive: true })
     }
-    start()
 
     return () => {
       stop()
