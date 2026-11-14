@@ -1,5 +1,15 @@
 import assert from 'node:assert/strict'
-import worker from '../dist/server/index.js'
+import { readdir, readFile } from 'node:fs/promises'
+
+const pages = process.env.CF_PAGES === '1'
+const { default: worker } = await import(pages ? '../dist/_worker.js' : '../dist/server/index.js')
+if (pages) {
+  const dir = new URL('../dist/', import.meta.url)
+  assert.deepEqual((await readdir(dir)).sort(), ['_worker.js', 'index.html'])
+  assert.doesNotMatch(await readFile(new URL('./index.html', dir), 'utf8'), /\/assets\/|id="root"/)
+  const unavailable = await worker.fetch(new Request('https://example.com/'), {})
+  assert.equal(unavailable.status, 503)
+}
 
 const origin = process.env.PORTFOLIO_TEST_URL || 'https://example.com'
 const password = '230586490172'
