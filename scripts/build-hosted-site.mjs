@@ -1,8 +1,13 @@
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-// Cloudflare Pages publishes the static Vite output directly.
-if (process.env.CF_PAGES === '1') process.exit(0)
+if (process.env.CF_PAGES === '1') {
+  await copyFile('worker/pages-video.js', 'dist/_worker.js')
+  await writeFile('dist/_routes.json', JSON.stringify({
+    version: 1, include: ['/assets/project-review-demo.mp4'], exclude: [],
+  }))
+  process.exit(0)
+}
 
 const client = 'tmp/hosting-client'
 const files = ['index.html', ...(await readdir(join(client, 'assets'))).map(name => `assets/${name}`)]

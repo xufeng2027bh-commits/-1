@@ -4,7 +4,7 @@ import { readdir, readFile } from 'node:fs/promises'
 const pages = process.env.CF_PAGES === '1'
 if (pages) {
   const dir = new URL('../dist/', import.meta.url)
-  assert.deepEqual((await readdir(dir)).sort(), ['_headers', '_redirects', 'assets', 'index.html'])
+  assert.deepEqual((await readdir(dir)).sort(), ['_headers', '_redirects', '_routes.json', '_worker.js', 'assets', 'index.html'])
   const html = await readFile(new URL('./index.html', dir), 'utf8')
   assert.match(html, /id="root"/)
   assert.doesNotMatch(html, /type="password"|PORTFOLIO_PASSWORD/)
@@ -13,7 +13,24 @@ if (pages) {
   for (const path of [...paths, '/assets/project-review-demo.mp4']) {
     assert.ok((await readFile(new URL(`.${path}`, dir))).byteLength > 0)
   }
-  console.log('Static, password-free Pages output and portfolio assets passed.')
+  const videoPath = '/assets/project-review-demo.mp4'
+  const routes = JSON.parse(await readFile(new URL('./_routes.json', dir), 'utf8'))
+  assert.deepEqual(routes, { version: 1, include: [videoPath], exclude: [] })
+  const media = await readFile(new URL(`.${videoPath}`, dir))
+  const { default: videoWorker } = await import('../dist/_worker.js')
+  const getRange = range => videoWorker.fetch(new Request(`https://example.com${videoPath}`, {
+    headers: { Range: range },
+  }), { ASSETS: { fetch: async request => {
+    assert.equal(request.headers.has('Range'), false)
+    return new Response(media, { headers: { 'Content-Type': 'video/mp4' } })
+  } } })
+  const partial = await getRange('bytes=0-63')
+  assert.equal(partial.status, 206)
+  assert.equal(partial.headers.get('Content-Range'), `bytes 0-63/${media.length}`)
+  assert.deepEqual(Buffer.from(await partial.arrayBuffer()), media.subarray(0, 64))
+  const invalid = await getRange('bytes=9999999-')
+  assert.equal(invalid.status, 416)
+  console.log('Static, password-free Pages output, asset references and video byte ranges passed.')
   process.exit(0)
 }
 const { default: worker } = await import('../dist/server/index.js')
